@@ -1,0 +1,205 @@
+<% content_for :head do %>
+  <% if @brief_run.in_progress? %>
+    <meta http-equiv="refresh" content="5">
+  <% end %>
+<% end %>
+
+<% content_for :title, "Run ##{@brief_run.id} · #{@brief_workspace.display_name}" %>
+
+<% gaps = @step_b["gaps"] || {} %>
+<% citations = Array(@step_a["citations"]) %>
+<% tasks = Array(@step_b["tasks"]) %>
+<% tickets = Array(@step_b["tickets"]) %>
+
+<div class="mb-4">
+  <%= link_to brief_workspace_path(@brief_workspace), class: "text-decoration-none small text-body-secondary d-inline-flex align-items-center gap-1" do %>
+    <i class="bi bi-arrow-left"></i> Back to workspace
+  <% end %>
+</div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  <div>
+    <p class="text-uppercase small fw-semibold text-primary mb-1">Brief run</p>
+    <h1 class="h2 fw-bold mb-2">Run #<%= @brief_run.id %></h1>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <span class="badge rounded-pill px-3 py-2 <%= brief_status_badge_class(@brief_run.status) %>"><%= @brief_run.status.titleize %></span>
+      <span class="run-meta"><%= time_ago_in_words(@brief_run.created_at) %> ago · <%= l @brief_run.created_at, format: :short %></span>
+    </div>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <% if @brief_run.succeeded? %>
+      <%= link_to export_csv_brief_workspace_brief_run_path(@brief_workspace, @brief_run), class: "btn btn-success rounded-pill px-3 shadow-sm" do %>
+        <i class="bi bi-download me-2"></i>Download CSV
+      <% end %>
+    <% end %>
+    <%= link_to "New run", new_brief_workspace_brief_run_path(@brief_workspace), class: "btn btn-outline-primary rounded-pill px-3" %>
+  </div>
+</div>
+
+<% if @brief_run.failed? %>
+  <div class="alert alert-danger border-0 shadow-sm mb-4">
+    <div class="d-flex gap-2">
+      <i class="bi bi-exclamation-octagon fs-4"></i>
+      <div>
+        <strong>Processing failed</strong>
+        <div class="mb-0 mt-1"><%= @brief_run.error_message %></div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<% if @brief_run.in_progress? %>
+  <div class="alert alert-primary border-0 shadow-sm d-flex gap-3 align-items-center mb-4">
+    <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
+    <div>
+      <strong>Working on your brief</strong>
+      <div class="small text-body-secondary mb-0">Extracting documents and running the two-step citation pipeline. This page refreshes every few seconds.</div>
+    </div>
+  </div>
+<% end %>
+
+<% if @brief_run.succeeded? %>
+  <div class="row g-4">
+    <div class="col-12">
+      <div class="surface-card p-4 p-lg-4 mb-2">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+          <h2 class="h5 fw-bold mb-0"><i class="bi bi-quote text-primary me-2"></i>Citations <span class="badge bg-light text-body-secondary border"><%= citations.size %></span></h2>
+          <div data-controller="clipboard" class="d-flex align-items-center gap-2">
+            <textarea class="visually-hidden" data-clipboard-target="source" readonly tabindex="-1"><%= JSON.pretty_generate(@step_a) %></textarea>
+            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" data-action="clipboard#copy"><i class="bi bi-clipboard me-1"></i>Copy JSON</button>
+          </div>
+        </div>
+        <% if citations.any? %>
+          <div class="row g-3">
+            <% citations.each do |c| %>
+              <div class="col-md-6">
+                <div class="border rounded-4 p-3 h-100 bg-light bg-opacity-50">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <code class="small text-primary-emphasis"><%= c["id"] %></code>
+                    <span class="badge text-bg-light border small fw-normal"><%= c["location_hint"] %></span>
+                  </div>
+                  <div class="citation-excerpt mb-2"><%= c["verbatim_excerpt"] %></div>
+                  <p class="small text-body-secondary mb-0"><%= c["neutral_summary"] %></p>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-body-secondary mb-0">No citations were extracted from the SOURCE (brief may be empty after extraction).</p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="surface-card p-4 h-100">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+          <h2 class="h5 fw-bold mb-0"><i class="bi bi-list-check text-primary me-2"></i>Tasks</h2>
+          <div data-controller="clipboard" class="d-flex gap-2">
+            <textarea class="visually-hidden" data-clipboard-target="source" readonly tabindex="-1"><%= JSON.pretty_generate(tasks) %></textarea>
+            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" data-action="clipboard#copy"><i class="bi bi-clipboard me-1"></i>Copy</button>
+          </div>
+        </div>
+        <% if tasks.any? %>
+          <div class="vstack gap-3">
+            <% tasks.each do |t| %>
+              <div class="border rounded-4 p-3">
+                <div class="fw-semibold mb-1"><%= t["title"] %></div>
+                <p class="small text-body-secondary mb-2"><%= t["description"] %></p>
+                <div class="small mb-2"><span class="text-body-secondary">Citations:</span> <%= Array(t["citation_ids"]).join(", ") %></div>
+                <% if Array(t["acceptance_criteria"]).any? %>
+                  <ul class="small mb-0 ps-3">
+                    <% Array(t["acceptance_criteria"]).each do |ac| %>
+                      <li><%= ac %></li>
+                    <% end %>
+                  </ul>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-body-secondary mb-0">No tasks (no grounded citations to map).</p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="surface-card p-4 h-100">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+          <h2 class="h5 fw-bold mb-0"><i class="bi bi-ticket-detailed text-primary me-2"></i>Jira-style tickets</h2>
+          <div data-controller="clipboard" class="d-flex gap-2">
+            <textarea class="visually-hidden" data-clipboard-target="source" readonly tabindex="-1"><%= JSON.pretty_generate(tickets) %></textarea>
+            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" data-action="clipboard#copy"><i class="bi bi-clipboard me-1"></i>Copy</button>
+          </div>
+        </div>
+        <% if tickets.any? %>
+          <div class="vstack gap-3">
+            <% tickets.each do |t| %>
+              <div class="border rounded-4 p-3">
+                <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                  <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis border border-primary-subtle"><%= t["issue_type"] %></span>
+                  <span class="small text-body-secondary"><%= t["id"] %></span>
+                </div>
+                <div class="fw-semibold mb-1"><%= t["title"] %></div>
+                <p class="small text-body-secondary mb-2"><%= t["description"] %></p>
+                <div class="small mb-2"><span class="text-body-secondary">Citations:</span> <%= Array(t["citation_ids"]).join(", ") %></div>
+                <% if Array(t["acceptance_criteria"]).any? %>
+                  <ul class="small mb-0 ps-3">
+                    <% Array(t["acceptance_criteria"]).each do |ac| %>
+                      <li><%= ac %></li>
+                    <% end %>
+                  </ul>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-body-secondary mb-0">No tickets (no grounded citations to map).</p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="surface-card surface-card--muted p-4 border-warning border border-opacity-50">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+          <h2 class="h5 fw-bold mb-0"><i class="bi bi-question-diamond text-warning me-2"></i>Gaps &amp; client questions</h2>
+          <div data-controller="clipboard" class="d-flex gap-2">
+            <textarea class="visually-hidden" data-clipboard-target="source" readonly tabindex="-1"><%= JSON.pretty_generate(gaps) %></textarea>
+            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" data-action="clipboard#copy"><i class="bi bi-clipboard me-1"></i>Copy JSON</button>
+          </div>
+        </div>
+
+        <% if gaps["confirmed_none"] %>
+          <div class="alert alert-success border-0 mb-3">
+            <strong>No open gaps (per model)</strong>
+            <div class="small mt-1 mb-0"><%= gaps["justification_if_none"] %></div>
+          </div>
+        <% end %>
+
+        <% Array(gaps["items"]).each do |g| %>
+          <div class="gap-item mb-3">
+            <div class="fw-semibold text-body mb-1"><%= g["topic"] %></div>
+            <p class="small mb-2"><%= g["reason"] %></p>
+            <div class="small text-primary-emphasis"><i class="bi bi-chat-right-dots me-1"></i><%= g["suggested_question"] %></div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="surface-card p-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+          <h2 class="h6 fw-bold mb-0 text-body-secondary text-uppercase small">Combined SOURCE (stored)</h2>
+          <div data-controller="clipboard" class="d-flex gap-2">
+            <textarea class="visually-hidden" data-clipboard-target="source" readonly tabindex="-1"><%= @brief_run.combined_source_text.to_s %></textarea>
+            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" data-action="clipboard#copy"><i class="bi bi-clipboard me-1"></i>Copy source</button>
+          </div>
+        </div>
+        <pre class="small bg-light border rounded-4 p-3 mb-0 text-body-secondary" style="max-height: 22rem; overflow: auto; white-space: pre-wrap;"><%= @brief_run.combined_source_text %></pre>
+      </div>
+    </div>
+  </div>
+<% elsif @brief_run.failed? %>
+  <div class="surface-card p-4">
+    <p class="text-body-secondary mb-0">Fix the issue above, adjust your brief, and start a new run from the workspace.</p>
+  </div>
+<% end %>

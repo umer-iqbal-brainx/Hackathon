@@ -1,0 +1,58 @@
+<% content_for :title, "#{@brief_workspace.display_name} · Brief → Tasks" %>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  <div>
+    <p class="text-uppercase small fw-semibold text-primary mb-1">Workspace</p>
+    <h1 class="h2 fw-bold mb-1"><%= @brief_workspace.display_name %></h1>
+    <p class="text-body-secondary mb-0">Runs are ordered newest first. Open a run to review citations, tickets, and gaps.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <%= link_to new_brief_workspace_brief_run_path(@brief_workspace), class: "btn btn-primary rounded-pill px-4 shadow-sm" do %>
+      <i class="bi bi-lightning-charge me-2"></i>New brief run
+    <% end %>
+    <%= link_to "All workspaces", root_path, class: "btn btn-outline-secondary rounded-pill" %>
+  </div>
+</div>
+
+<div class="surface-card overflow-hidden">
+  <div class="p-4 border-bottom bg-light bg-opacity-50 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h2 class="h6 mb-0 fw-semibold text-body-secondary text-uppercase small">Runs</h2>
+    <span class="badge bg-white text-body-secondary border"><%= @brief_runs.size %> shown</span>
+  </div>
+  <% if @brief_runs.any? %>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 table-run-index">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-4">Run</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th class="text-end pe-4">Open</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @brief_runs.each do |run| %>
+            <tr>
+              <td class="ps-4">
+                <span class="fw-semibold text-body">#<%= run.id %></span>
+                <div class="run-meta text-truncate" style="max-width: 18rem;"><%= truncate(run.user_prompt.to_s, length: 80) %></div>
+              </td>
+              <td>
+                <span class="badge rounded-pill px-3 py-2 <%= brief_status_badge_class(run.status) %>"><%= run.status.titleize %></span>
+              </td>
+              <td class="run-meta"><%= l run.created_at, format: :short %></td>
+              <td class="text-end pe-4">
+                <%= link_to "View", [@brief_workspace, run], class: "btn btn-sm btn-outline-primary rounded-pill" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="p-5 text-center text-body-secondary">
+      <p class="mb-3">No runs yet for this workspace.</p>
+      <%= link_to "Start first run", new_brief_workspace_brief_run_path(@brief_workspace), class: "btn btn-primary rounded-pill" %>
+    </div>
+  <% end %>
+</div>

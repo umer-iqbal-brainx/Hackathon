@@ -1,0 +1,70 @@
+<% content_for :title, "Workspaces · Brief → Tasks" %>
+
+<div class="row g-4 align-items-stretch mb-4">
+  <div class="col-lg-7">
+    <div class="hero-card p-4 p-lg-5 h-100">
+        <p class="text-uppercase small fw-semibold text-primary mb-2">PMO workspace</p>
+      <h1 class="display-6 fw-bold text-body mb-3">Turn client briefs into dev-ready work</h1>
+      <p class="lead text-body-secondary mb-4">
+        Citation-first, two-step AI pipeline: nothing ships without a verbatim source anchor.
+        Gaps are mandatory—so your team always knows what still needs the client.
+      </p>
+      <div class="d-flex flex-wrap gap-2">
+        <%= link_to new_brief_workspace_path, class: "btn btn-primary btn-lg px-4 rounded-pill shadow-sm" do %>
+          <i class="bi bi-folder-plus me-2"></i>Create workspace
+        <% end %>
+        <span class="align-self-center small text-body-secondary ms-lg-2">PDF, DOCX, plain text + PM notes</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="surface-card p-4 h-100 d-flex flex-column">
+      <h2 class="h6 fw-semibold mb-3"><i class="bi bi-shield-check text-primary me-2"></i>How it behaves</h2>
+      <ul class="list-unstyled mb-0 flex-grow-1 d-grid gap-3 small text-body-secondary">
+        <li class="d-flex gap-2"><i class="bi bi-1-circle text-primary"></i><span><strong class="text-body">Step A</strong> extracts citations with exact excerpts from your SOURCE.</span></li>
+        <li class="d-flex gap-2"><i class="bi bi-2-circle text-primary"></i><span><strong class="text-body">Step B</strong> builds tasks &amp; Jira-style tickets that only reference those citations.</span></li>
+        <li class="d-flex gap-2"><i class="bi bi-chat-dots text-warning"></i><span><strong class="text-body">Gaps</strong> are always addressed—either listed as questions or explicitly confirmed none.</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="surface-card overflow-hidden">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 p-4 border-bottom bg-light bg-opacity-50">
+    <h2 class="h5 mb-0 fw-semibold">Recent workspaces</h2>
+    <%= link_to new_brief_workspace_path, class: "btn btn-sm btn-outline-primary rounded-pill" do %>
+      <i class="bi bi-plus-lg me-1"></i>New
+    <% end %>
+  </div>
+  <% if @brief_workspaces.any? %>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 table-run-index">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-4">Name</th>
+            <th>Updated</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @brief_workspaces.each do |ws| %>
+            <tr>
+              <td class="ps-4">
+                <%= link_to ws.display_name, ws, class: "fw-semibold text-decoration-none text-body" %>
+              </td>
+              <td class="run-meta"><%= time_ago_in_words(ws.updated_at) %> ago</td>
+              <td class="text-end pe-4">
+                <%= link_to "Open", ws, class: "btn btn-sm btn-light border rounded-pill px-3" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="p-5 text-center text-body-secondary">
+      <p class="mb-3">No workspaces yet—create one to start a brief run.</p>
+      <%= link_to "Create workspace", new_brief_workspace_path, class: "btn btn-primary rounded-pill" %>
+    </div>
+  <% end %>
+</div>

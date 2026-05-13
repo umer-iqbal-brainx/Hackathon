@@ -1,29 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" class="h-100">
   <head>
-    <title><%= content_for(:title) || "Rails App" %></title>
+    <title><%= content_for?(:title) ? yield(:title) : "Brief → Dev Tasks" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Rails App">
-    <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-
     <%= yield :head %>
-
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
-
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
   </head>
 
-  <body>
-    <%= yield %>
+  <body class="d-flex flex-column min-vh-100 bg-body-secondary brief-app">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient-brief border-bottom border-dark border-opacity-10 shadow-sm">
+      <div class="container-lg py-2">
+        <%= link_to root_path, class: "navbar-brand fw-semibold d-flex align-items-center gap-2" do %>
+          <span class="rounded-2 bg-white bg-opacity-10 p-2 lh-1"><i class="bi bi-diagram-3"></i></span>
+          <span>Brief<span class="text-white-50">→</span>Tasks</span>
+        <% end %>
+        <div class="navbar-nav ms-auto gap-lg-2">
+          <%= link_to "Workspaces", root_path, class: "nav-link px-3 rounded-pill #{controller_name == 'brief_workspaces' && action_name == 'index' ? 'active fw-semibold bg-white bg-opacity-10' : ''}" %>
+          <%= link_to new_brief_workspace_path, class: "btn btn-light btn-sm px-3 rounded-pill fw-semibold ms-lg-2" do %>
+            <i class="bi bi-plus-lg me-1"></i>New workspace
+          <% end %>
+        </div>
+      </div>
+    </nav>
+
+    <main class="flex-grow-1 py-4 py-lg-5">
+      <div class="container-lg">
+        <%= render "shared/flash" %>
+        <%= yield %>
+      </div>
+    </main>
+
+    <footer class="border-top bg-white py-4 mt-auto">
+      <div class="container-lg small text-body-secondary d-flex flex-wrap justify-content-between gap-2">
+        <span>PMO brief intelligence · citation-first pipeline</span>
+        <span class="text-body-tertiary">OpenAI <%= BriefIntel::OPENAI_MODEL %></span>
+      </div>
+    </footer>
   </body>
 </html>
