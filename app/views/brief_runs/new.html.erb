@@ -1,0 +1,43 @@
+<% content_for :title, "New run · #{@brief_workspace.display_name}" %>
+
+<div class="row justify-content-center">
+  <div class="col-xl-8">
+    <div class="surface-card p-4 p-lg-5">
+      <div class="mb-4">
+        <p class="text-uppercase small fw-semibold text-primary mb-1">New brief run</p>
+        <h1 class="h3 fw-bold mb-2">Add source material</h1>
+        <p class="text-body-secondary mb-0">
+          Paste PM instructions and/or attach PDF, DOCX, or plain text files (max <%= BriefIntel::MAX_FILES %> files, <%= (BriefIntel::MAX_FILE_BYTES / 1.megabyte).to_i %> MB each).
+        </p>
+      </div>
+
+      <%= form_with model: [@brief_workspace, @brief_run], html: { multipart: true, class: "brief-run-form" } do |f| %>
+        <% if @brief_run.errors.any? %>
+          <div class="alert alert-danger border-0 shadow-sm">
+            <ul class="mb-0 ps-3">
+              <% @brief_run.errors.full_messages.each do |msg| %>
+                <li><%= msg %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <div class="mb-4">
+          <%= f.label :user_prompt, "PM instructions & context", class: "form-label fw-semibold" %>
+          <%= f.text_area :user_prompt, rows: 8, class: "form-control form-control-lg shadow-sm", placeholder: "Paste the client brief, goals, constraints, links, and anything engineers must respect..." %>
+        </div>
+
+        <div class="mb-4">
+          <%= f.label :documents, "Attachments", class: "form-label fw-semibold" %>
+          <%= f.file_field :documents, multiple: true, accept: ".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain", class: "form-control form-control-lg shadow-sm" %>
+          <div class="form-text">Optional — combine with instructions above.</div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+          <%= f.submit "Run pipeline", class: "btn btn-primary btn-lg rounded-pill px-4 shadow-sm" %>
+          <%= link_to "Back", @brief_workspace, class: "btn btn-link" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

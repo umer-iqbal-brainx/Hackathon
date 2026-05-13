@@ -1,0 +1,32 @@
+<% content_for :title, "New workspace · Brief → Tasks" %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="surface-card p-4 p-lg-5">
+      <h1 class="h3 fw-bold mb-2">New workspace</h1>
+      <p class="text-body-secondary mb-4">Group related brief runs so follow-up prompts can reuse prior structured output.</p>
+
+      <%= form_with model: @brief_workspace, class: "needs-validation" do |f| %>
+        <% if @brief_workspace.errors.any? %>
+          <div class="alert alert-danger border-0 shadow-sm">
+            <ul class="mb-0 ps-3">
+              <% @brief_workspace.errors.full_messages.each do |msg| %>
+                <li><%= msg %></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <div class="form-floating mb-4">
+          <%= f.text_field :name, class: "form-control form-control-lg", placeholder: "e.g. ACME Portal rollout", autocomplete: "off" %>
+          <%= f.label :name, "Display name (optional)" %>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+          <%= f.submit "Create workspace", class: "btn btn-primary btn-lg rounded-pill px-4" %>
+          <%= link_to "Cancel", root_path, class: "btn btn-link" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
